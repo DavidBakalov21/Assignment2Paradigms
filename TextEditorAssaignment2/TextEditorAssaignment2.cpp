@@ -7,43 +7,15 @@
 #include <limits> 
 
 
-class TextArray {
-public:
-    TextArray() {}
-    void addStringFromNewLine(std::string str) {
-        vecRedoUndo.push_back(strings);
-        pointer++;
-        strings.push_back(str);
-        vecRedoUndo.push_back(strings);
-        pointer++;
-        std::cout << pointer << std::endl;
-       
-    }
 
+
+
+class FileO {
     
-   
-    void addStringByIndex(int row,int place, std::string str) {
-        vecRedoUndo.push_back(strings);
-        pointer++;
-        std::string Buffer = "";
-        for (int i = 0; i < strings[row].length()+1; i++)
-        {
-            if (place == i) {
-                for (int j = 0; j < str.length(); j++) {
-                    Buffer += str[j];
-                }
 
-            }
-            if (i < strings[row].length()) {
-                Buffer += strings[row][i];
-            }
-            
-        }
-        strings[row] = Buffer;
-
-    }
-
-    void Save(std::string name) {
+public:
+    FileO() {}
+    void Save(std::string name, std::vector<std::string> strings) {
         std::ofstream file(name);
         for (int i = 0; i < strings.size(); i++)
         {
@@ -61,13 +33,58 @@ public:
         }
     }
 
+private:
+
+};
+
+
+
+class TextArray {
+public:
+    TextArray() {}
+    std::vector<std::string> strings;
+    void addStringFromNewLine(std::string str) {
+        strings.push_back(str);
+        
+        pointer++;
+        vecRedoUndo.resize(pointer);
+        vecRedoUndo.push_back(strings);
+     
+       
+    }
+
+    
+   
+    void addStringByIndex(int row,int place, std::string str) {
+        std::string Buffer = "";
+        for (int i = 0; i < strings[row].length()+1; i++)
+        {
+            if (place == i) {
+                for (int j = 0; j < str.length(); j++) {
+                    Buffer += str[j];
+                }
+
+            }
+            if (i < strings[row].length()) {
+                Buffer += strings[row][i];
+            }
+            
+        }
+        strings[row] = Buffer;
+        pointer++;
+        vecRedoUndo.resize(pointer);
+        vecRedoUndo.push_back(strings);
+    }
+
+    
+
 
     void printer() {
         for (int i = 0; i < strings.size(); i++)
         {
             std::cout << strings[i] << std::endl;
         }
-        std::cout << pointer << std::endl;
+       // std::cout << pointer << std::endl;
     }
     void Search(std::string name, std::string search) {
         std::ifstream file(name);
@@ -102,14 +119,13 @@ public:
             row++;
 
         }
-        std::cout << pointer << std::endl;
+        //std::cout << pointer << std::endl;
     }
 
 
 
     void Delete(int row, int Place, int amount) {
-        pointer++;
-        vecRedoUndo.push_back(strings);
+      
         for (int i = 0; i < strings[row].length() + 1; i++)
         {
             if (i==Place)
@@ -118,7 +134,11 @@ public:
             }
 
         }
-        std::cout << pointer << std::endl;
+
+        pointer++;
+        vecRedoUndo.resize(pointer);
+        vecRedoUndo.push_back(strings);
+        //std::cout << pointer << std::endl;
     }
     void Undo() {
 
@@ -128,7 +148,11 @@ public:
             pointer--;
             strings = vecRedoUndo[pointer];
         }
-        std::cout << pointer << std::endl;
+        else
+        {
+            std::cout << "mistake" << std::endl;
+        }
+        
         
     }
     void Redo() {
@@ -137,30 +161,113 @@ public:
             strings = vecRedoUndo[pointer];
             std::cout << pointer << std::endl;
         }
+        else
+        {
+            std::cout << "mistake" << std::endl;
+        }
 
       
     }
-    void showVec() {
-        for (int i = 0; i < vecRedoUndo.size(); i++)
-        {
-            for (int j = 0; j < vecRedoUndo[i].size(); j++)
-            {
-                std::cout << strings[i][j] << std::endl;
-                std::cout << "------------" << std::endl;
-            }
-            
-        }
-        std::cout << pointer << std::endl;
-    }
 private:
-    int pointer = -1;
-    std::vector<std::string> strings;
+    int pointer = 0;
+    
     std::vector<std::vector<std::string>> vecRedoUndo;
 
 };
+class Command {
+
+
+public:
+    Command() {}
+    void commandLoop() {
+
+        std::cout << "1-Apepend from nl, 2-insert by index, 3-Save to file, 4-load from file, 5-print to console, 6-Search, 7-del, 8-undo, 9-redo\n";
+        TextArray Editor;
+        FileO FileOperator;
+        while (true) {
+            int choice;
+            std::cin >> choice;
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            switch (choice)
+            {
+            case 1:
+            {
+                std::string Inputstring;
+                std::getline(std::cin, Inputstring);
+                Editor.addStringFromNewLine(Inputstring);
+                break;
+            }
+            case 2: {
+                int row;
+                int Place;
+                std::string str;
+                std::cin >> row;
+                std::cin >> Place;
+                std::cin >> str;
+                Editor.addStringByIndex(row, Place, str);
+                break;
+            }
+
+            case 3: {
+                std::string fname;
+                std::cin >> fname;
+                FileOperator.Save(fname, Editor.strings);
+                break;
+            }
+            case 4: {
+                std::string fname2;
+                std::cin >> fname2;
+                FileOperator.Read(fname2);
+                break;
+            }
+            case 5: {
+
+                Editor.printer();
+                break;
+            }
+            case 6: {
+                std::string fname3;
+                std::string search;
+                Editor.Search(fname3, search);
+                break;
+            }
+            case 7: {
+                int row;
+                int Place;
+                int amount;
+                std::cin >> row;
+                std::cin >> Place;
+                std::cin >> amount;
+                Editor.Delete(row, Place, amount);
+                break;
+
+
+            }
+            case 8: {
+                Editor.Undo();
+
+                break;
+            }
+            case 9: {
+                Editor.Redo();
+                break;
+            }
+
+            default:
+                std::cout << "Wrong numba\n";
+                break;
+            }
+        }
+
+    }
+};
 int main()
 {
-    TextArray Editor;
+    Command com;
+
+    com.commandLoop();
+   /* TextArray Editor;
+    FileO FileOperator;
    // Editor.addStringFromNewLine("asdf Hello");
     //Editor.addStringByIndex(0, 5, " Hello");
     //Editor.addStringFromNewLine("sdssd");
@@ -202,13 +309,13 @@ int main()
        case 3: {
            std::string fname;
            std::cin >> fname;
-           Editor.Save(fname);
+           FileOperator.Save(fname, Editor.strings);
            break;
        }
        case 4: {
            std::string fname2;
            std::cin >> fname2;
-           Editor.Read(fname2);
+           FileOperator.Read(fname2);
            break;
        }
        case 5:{
@@ -249,4 +356,5 @@ int main()
            break;
        }
     }
+    */
 }
