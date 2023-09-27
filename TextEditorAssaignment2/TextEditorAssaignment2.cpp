@@ -4,6 +4,9 @@
 #include <iostream>
 #include <cstring>
 #include <sstream>
+
+
+
 class TextArray {
 public:
     TextArray() {}
@@ -14,6 +17,8 @@ public:
     
    
     void addStringByIndex(int row,int place, std::string str) {
+        vecRedoUndo.push_back(strings);
+        pointer++;
         std::string Buffer = "";
         for (int i = 0; i < strings[row].length()+1; i++)
         {
@@ -95,6 +100,8 @@ public:
 
 
     void Delete(int row, int Place, int amount) {
+        pointer++;
+        vecRedoUndo.push_back(strings);
         for (int i = 0; i < strings[row].length() + 1; i++)
         {
             if (i==Place)
@@ -104,10 +111,18 @@ public:
 
         }
     }
-  
+    void Undo() {
+        strings = vecRedoUndo[pointer - 1];
+    }
+    void Redo() {
+        strings = vecRedoUndo[pointer + 1];
+    }
 
 private:
+    int pointer = 0;
     std::vector<std::string> strings;
+    std::vector<std::vector<std::string>> vecRedoUndo;
+
 };
 int main()
 {
@@ -124,4 +139,19 @@ int main()
     Editor.Delete(0, 0, 3);
     Editor.printer();
     //std::cout << "Hello World!\n";
+
+    while (true) {
+        int choice;
+       std::cin >> choice;
+       switch (choice)
+       {
+       case 1:
+           std::string Inputstring;
+           std::getline(std::cin, Inputstring);
+           Editor.addStringFromNewLine("asdf Hello");
+
+       default:
+           break;
+       }
+    }
 }
